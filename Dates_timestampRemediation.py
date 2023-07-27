@@ -34,7 +34,7 @@ print("This script will remediate inclusive into single dates when there is a li
 
 csvinput = csv.DictReader(open("inclusiveDateRemediationInput.csv", "r"))
 
-report = []
+
 
 for row in csvinput:
     AO_uri = row["URI"]
@@ -52,29 +52,3 @@ for row in csvinput:
 
     date_json = archival_object_json['dates'][0]['begin']
     print(date_json)
-
-    # archival_object_json['dates'][0]["expression"] = date_string
-    # archival_object_json["dates"][0]["begin"] = date_string
-    # archival_object_json["dates"][0]["date_type"] = date_type
-    # try:
-    #     for date in archival_object_json['dates']:
-    #         keys_to_remove = ['lock_version', 'created_by', 'last_modified_by', 'create_time', 'system_mtime', 'user_mtime', 'end']
-    #         for key in keys_to_remove:
-    #             date.pop(key)
-    # except:
-    #     continue
-    #
-    # updated_archival_object_data = json.dumps(archival_object_json)
-    # print(updated_digital_object_data)
-    # # print(updated_archival_object_data)
-    # try:
-    #     archival_object_post = requests.post(baseURL + AO_uri, headers=headers, data=updated_archival_object_data).json()
-    #     ao_report = AO_uri + " processed"
-    #     print(ao_report)
-    #     # report.append(ao_report)
-    # except:
-    #     # error = print('Yikes! something went wrong with ' + AO_uri)
-    #     report.append(error)
-
-
-# print(report)
