@@ -1,10 +1,10 @@
 import os
 import json
 import csv
-from datetime import datetime
 import requests
 import secrets
 
+print("This script works from a list of known objects with single dates and removes any erroneous timestamps associated with the date fields. This script is designed to work from a work order plug in report, but will also work with any CSV input with AO URIs and Dates. Name your input file timestampRemediationInput.csv")
 
 working_dir = input("Enter the filepath to your working directory. If you do not have one, create a temporary space on your desktop: ")
 os.chdir(working_dir)
@@ -30,25 +30,35 @@ auth = requests.post(baseURL + '/users/'+user+'/login?password='+password).json(
 session = auth["session"]
 headers = {'X-ArchivesSpace-Session':session, 'Content_Type':'application/json'}
 
-print("This script will remediate inclusive into single dates when there is a list of known objects.")
-
-csvinput = csv.DictReader(open("inclusiveDateRemediationInput.csv", "r"))
+# csv = csv.reader(open("timestampRemediationInput.csv", "r"))
 
 
+input = csv.DictReader(open("timestampRemediationInput.csv"))
 
-for row in csvinput:
-    AO_uri = row["URI"]
-    date_string = row["Dates"].strip("creation: ").replace("T00:00:00+00:00","")
-    print(date_string)
-    # date_string_single = date_string_inclusive[0]
-    # date_object = datetime.strptime(date_string_single, "%Y-%m-%d")
-    # # date_string_single_iso = datetime.strftime(date_string_single, "%Y-%m-%d")
-    # date_expression = datetime.strftime(date_object, "%Y-%m-%d")
-    date_type = "single"
+for row in input:
+    # print(row)
+    uri = row["URI"]
+    date = row["Dates"].replace("creation: ","").replace("T00:00:00+00:00","")
+    print(date)
 
-    archival_object_json = requests.get(baseURL + AO_uri, headers=headers).json()
-    # print(archival_object_json['lang_materials'])
-    # print(archival_object_json)
+    ao_json = requests.get(baseURL + uri, headers=headers).json()
+    # ao_dates = ao_json["dates"]
+    ao_json["dates"][0]["expression"] = date
+    ao_json["dates"][0]["begin"] = date
+    ao_json["dates"][0]["date_type"] = "single"
 
-    date_json = archival_object_json['dates'][0]['begin']
-    print(date_json)
+    for date in ao_json['dates']:
+        keys_to_remove = ['lock_version', 'created_by', 'last_modified_by', 'create_time', 'system_mtime', 'user_mtime']
+        for key in keys_to_remove:
+            date.pop(key)
+
+    updated_archival_object_data = json.dumps(ao_json)
+    # print(updated_archival_object_data)
+    # print(updated_archival_object_data)
+
+    archival_object_post = requests.post(baseURL + uri, headers=headers, data=updated_archival_object_data).json()
+    ao_report = uri + " processed"
+    print(ao_report)
+
+print("Done!")
+        # report.append(ao_report)
